@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#coding:utf-8
+
 from picamera import PiCamera
 import time
 """set camera"""

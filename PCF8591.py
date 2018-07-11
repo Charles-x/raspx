@@ -1,14 +1,15 @@
 #!/usr/bin/env python
+#coding:utf-8
 #------------------------------------------------------
 #
-#		This is a program for PCF8591 Module.
+#    This is a program for PCF8591 Module.
 #
-#		Warnng! The Analog input MUST NOT be over 3.3V!
+#    Warnng! The Analog input MUST NOT be over 3.3V!
 #
-#		In this script, we use a poteniometer for analog
+#    In this script, we use a poteniometer for analog
 #   input, and a LED on AO for analog output.
 #
-#		you can import this script to another by:
+#    you can import this script to another by:
 #	import PCF8591 as ADC
 #
 #	ADC.Setup(Address)  # Check it by sudo i2cdetect -y 1
@@ -24,44 +25,43 @@ bus = smbus.SMBus(1)
 
 #check your PCF8591 address by type in 'sudo i2cdetect -y -l' in terminal.
 def setup(Addr):
-	global address
-	address = Addr
+    global address
+    address = Addr
 
 def read(chn): #channel
-	try:
-		if chn == 0:
-			bus.write_byte(address,0x40)
-		if chn == 1:
-			bus.write_byte(address,0x41)
-		if chn == 2:
-			bus.write_byte(address,0x42)
-		if chn == 3:
-			bus.write_byte(address,0x43)
-		bus.read_byte(address) # dummy read to start conversion
-	except Exception, e:
-		print "Address: %s" % address
-		print e
-	return bus.read_byte(address)
+    try:
+        if chn == 0:
+            bus.write_byte(address,0x40)
+        if chn == 1:
+            bus.write_byte(address,0x41)
+        if chn == 2:
+            bus.write_byte(address,0x42)
+        if chn == 3:
+            bus.write_byte(address,0x43)
+        bus.read_byte(address) # dummy read to start conversion
+    except Exception, e:
+        print "Address: %s" % address
+        print e
+    return bus.read_byte(address)
 
 def write(val):
-	try:
-		temp = val # move string value to temp
-		temp = int(temp) # change string to integer
-		# print temp to see on terminal else comment out
-		bus.write_byte_data(address, 0x40, temp)
-	except Exception, e:
-		print "Error: Device address: 0x%2X" % address
-		print e
+    try:
+        temp = val # move string value to temp
+        temp = int(temp) # change string to integer
+        # print temp to see on terminal else comment out
+        bus.write_byte_data(address, 0x40, temp)
+    except Exception, e:
+        print "Error: Device address: 0x%2X" % address
+        print e
 
 if __name__ == "__main__":
-	setup(0x48)
-	while True:
-		print 'AIN0 = ', read(0), "light"
-		print 'AIN1 = ', read(1), "T"
-		print 'AIN2 = ', read(2), "external"
-		print 'AIN3 = ', read(3), "0-5v"
-
-		tmp = read(0)
-		tmp = tmp*(255-125)/255+125 # LED won't light up below 125, so convert '0-255' to '125-255'
-		write(tmp)
-		time.sleep(1)
+    setup(0x48)
+    while True:
+        print 'AIN0 = ', read(0), "light"
+        print 'AIN1 = ', read(1), "T"
+        print 'AIN2 = ', read(2), "external"
+        print 'AIN3 = ', read(3), "0-5v"
+        tmp = read(0)
+        tmp = tmp*(255-125)/255+125 # LED won't light up below 125, so convert '0-255' to '125-255'
+        write(tmp)
+        time.sleep(1)

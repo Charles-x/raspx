@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+#coding:utf-8
 import PCF8591 as ADC
-import RPi.GPIO as GPIO
 import time
 
-# GPIO.setmode(GPIO.BCM)
+
 
 
 def setup():
@@ -11,7 +11,6 @@ def setup():
 
 
 def loop():
-    # status = 1
     maxvalue = 0
     minvalue = 255
     maxvalue2 = 0
@@ -28,9 +27,6 @@ def loop():
         print 'light intensity: {}    min: {},max: {}'.format(value,minvalue,maxvalue)
         print 'Soil humidity : {}   min: {},max: {}'.format(value2,minvalue2,maxvalue2)
         print
-        # First channel is used also for onboard sensors
-        # Onboard sensor to focus on is selected with short caps
-        # print 'The second channel like this:', ADC.read(1)
         num += 1
         time.sleep(1)
 
