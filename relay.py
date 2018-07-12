@@ -16,4 +16,4 @@ for i in range(5):
     print "-"
     GPIO.output(water_relay_pin,GPIO.HIGH)
     sleep(1)
-cleanup = GPIO.cleanup()
+GPIO.cleanup()
