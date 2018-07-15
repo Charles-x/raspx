@@ -3,68 +3,90 @@
 
 import RPi.GPIO as GPIO
 import time
+import json
 
-TH_pin = 6
 
-data = []
-j = 0
+class T_H(object):
+    def __init__(self,THpin):
+        self.TH_pin = THpin
+        # self.data = None
+        GPIO.setmode(GPIO.BCM)
+        time.sleep(0.8)
+        GPIO.setup(self.TH_pin, GPIO.OUT)
+        GPIO.output(self.TH_pin, GPIO.LOW)
 
-GPIO.setmode(GPIO.BCM)
-time.sleep(1)
-GPIO.setup(TH_pin, GPIO.OUT)
-GPIO.output(TH_pin, GPIO.LOW)
-time.sleep(0.02)
-GPIO.output(TH_pin, GPIO.HIGH)
-GPIO.setup(TH_pin, GPIO.IN)
+    def get_data(self):
+        data = []
+        times = 0
+        time.sleep(0.02)
+        GPIO.output(self.TH_pin, GPIO.HIGH)
+        GPIO.setup(self.TH_pin, GPIO.IN)
+        while GPIO.input(self.TH_pin) == GPIO.LOW:
+            continue
+        while GPIO.input(self.TH_pin) == GPIO.HIGH:
+            continue
+        while times < 40:
+            Voh = 0
+            while GPIO.input(self.TH_pin) == GPIO.LOW:
+                continue
+            while GPIO.input(self.TH_pin) == GPIO.HIGH:
+                Voh += 1
+                if Voh > 100:
+                    break
+            if Voh < 8:
+                data.append(0)
+            else:
+                data.append(1)
+            times += 1
+        # print "sensor is working."
+        return data
 
-while GPIO.input(TH_pin) == GPIO.LOW:
-    continue
+    @staticmethod
+    def parse_data(data):
+        humidity_bit = data[0:8]
+        humidity_point_bit = data[8:16]
+        temperature_bit = data[16:24]
+        temperature_point_bit = data[24:32]
+        check_bit = data[32:40]
+        humidity = 0
+        humidity_point = 0
+        temperature = 0
+        temperature_point = 0
+        check = 0
+        for i in range(8):
+            humidity += humidity_bit[i] * 2 ** (7 - i)
+            humidity_point += humidity_point_bit[i] * 2 ** (7 - i)
+            temperature += temperature_bit[i] * 2 ** (7 - i)
+            temperature_point += temperature_point_bit[i] * 2 ** (7 - i)
+            check += check_bit[i] * 2 ** (7 - i)
+        data_tmp = humidity + humidity_point + temperature + temperature_point
+        # print "data_tmp",tmp
+        # print "check",check
+        # print humidity,humidity_point,temperature,temperature_point
+        if check == data_tmp:
+            check = True
+            return json.dumps({"check":check,"data":[{"humidity":humidity+float(humidity_point)/10,
+                                                      "temperature":temperature+float(temperature_point)/10}]})
+        else:
+            return json.dumps({"check": False, "data": [{"check": check,
+                                                         "data_tmp": data_tmp}]})
 
-while GPIO.input(TH_pin) == GPIO.HIGH:
-    continue
+    def data_check(self):
+        #TODO:data validity check use binary data.
+        pass
 
-while j < 40:
-    k = 0
-    while GPIO.input(TH_pin) == GPIO.LOW:
-        continue
-    while GPIO.input(TH_pin) == GPIO.HIGH:
-        k += 1
-        if k > 100:
-            break
-    if k < 8:
-        data.append(0)
-    else:
-        data.append(1)
-    j += 1
 
-print "sensor is working."
-GPIO.cleanup()
+    def auto_getdata(self):
+        data = self.get_data()
+        #TODO:If data is invalid,get data repeat until is valid.
 
-print data
 
-humidity_bit = data[0:8]
-humidity_point_bit = data[8:16]
-temperature_bit = data[16:24]
-temperature_point_bit = data[24:32]
-check_bit = data[32:40]
+    def __delete__(self):
+        GPIO.cleanup()
 
-humidity = 0
-humidity_point = 0
-temperature = 0
-temperature_point = 0
-check = 0
+if __name__ == '__main__':
+    T = T_H(THpin=6)
+    # print T.get_data()
+    # data = [0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0]
+    print T_H.parse_data(T.get_data())
 
-for i in range(8):
-    humidity += humidity_bit[i] * 2 ** (7 - i)
-    humidity_point += humidity_point_bit[i] * 2 ** (7 - i)
-    temperature += temperature_bit[i] * 2 ** (7 - i)
-    temperature_point += temperature_point_bit[i] * 2 ** (7 - i)
-    check += check_bit[i] * 2 ** (7 - i)
-
-tmp = humidity + humidity_point + temperature + temperature_point
-
-if check == tmp:
-    print "temperature : ", temperature, ", humidity : ", humidity
-else:
-    print "########wrong########"
-    print "temperature : ", temperature, ", humidity : ", humidity, " check : ", check, " tmp : ", tmp
