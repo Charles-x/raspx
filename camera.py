@@ -5,11 +5,11 @@ from picamera import PiCamera
 import time
 """set camera"""
 camera = PiCamera()
-camera.resolution = (800,600)
-camera.framerate = 30
+camera.resolution = (320,240)
+camera.framerate = 15
 
 camera.start_preview()
 time.sleep(1)
-camera.capture('/home/pi/testme.jpg')
+camera.capture('/home/pi/Pictures/test.jpg')
 camera.stop_preview()
 

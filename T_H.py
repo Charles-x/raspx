@@ -3,19 +3,19 @@
 
 import RPi.GPIO as GPIO
 import time
-import json
 
 
 class T_H(object):
     def __init__(self,THpin):
         self.TH_pin = THpin
-        # self.data = None
+        self.check = None
+        GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
-        time.sleep(0.8)
+        time.sleep(1)
         GPIO.setup(self.TH_pin, GPIO.OUT)
         GPIO.output(self.TH_pin, GPIO.LOW)
 
-    def get_data(self):
+    def get_data(self,parse_check):
         data = []
         times = 0
         time.sleep(0.02)
@@ -38,48 +38,55 @@ class T_H(object):
             else:
                 data.append(1)
             times += 1
-        # print "sensor is working."
-        return data
-
-    @staticmethod
-    def parse_data(data):
-        humidity_bit = data[0:8]
-        humidity_point_bit = data[8:16]
-        temperature_bit = data[16:24]
-        temperature_point_bit = data[24:32]
-        check_bit = data[32:40]
-        humidity = 0
-        humidity_point = 0
-        temperature = 0
-        temperature_point = 0
-        check = 0
-        for i in range(8):
-            humidity += humidity_bit[i] * 2 ** (7 - i)
-            humidity_point += humidity_point_bit[i] * 2 ** (7 - i)
-            temperature += temperature_bit[i] * 2 ** (7 - i)
-            temperature_point += temperature_point_bit[i] * 2 ** (7 - i)
-            check += check_bit[i] * 2 ** (7 - i)
-        data_tmp = humidity + humidity_point + temperature + temperature_point
-        # print "data_tmp",tmp
-        # print "check",check
-        # print humidity,humidity_point,temperature,temperature_point
-        if check == data_tmp:
-            check = True
-            return json.dumps({"check":check,"data":[{"humidity":humidity+float(humidity_point)/10,
-                                                      "temperature":temperature+float(temperature_point)/10}]})
+        if parse_check:
+            return self.data_check(self.parse_data(data))
         else:
-            return json.dumps({"check": False, "data": [{"check": check,
-                                                         "data_tmp": data_tmp}]})
+            return data
 
-    def data_check(self):
-        #TODO:data validity check use binary data.
-        pass
+    def parse_data(self,data):
+        if not data:
+            return False
+        data_item = ("humidity_bit", "humidity_point_bit", "temperature_bit", "temperature_point_bit", "check_bit")
+        data_tmp = {"check": None, "data": [{}]}
+        for i, d in zip(range(0, 41, 8), range(5)):
+            data_tmp["data"][0].update(dict([(data_item[d], int(reduce(lambda a, b: str(a) + str(b), data[i:i + 8]), 2))]))
 
+        return data_tmp
 
-    def auto_getdata(self):
-        data = self.get_data()
-        #TODO:If data is invalid,get data repeat until is valid.
+    def data_check(self,data_tmp):
+        if not data_tmp:
+            self.check = None
+            return False
 
+        if sum(data_tmp["data"][0].values()) - data_tmp["data"][0]["check_bit"]*2 == 0:
+            data_tmp["check"] = True
+            self.check = True
+            return data_tmp
+        else:
+            data_tmp["check"] =False
+            self.check = False
+            return data_tmp
+
+    def datea(self,data):
+        #{'data': [{'temperature_bit': 14, 'humidity_point_bit': 128, 'temperature_point_bit': 128, 'check_bit': 50, 'humidity_bit': 163}], 'check': False}
+        T_H = data['data'][0]
+        datea = {'data': [{'temperature': T_H["temperature_bit"]+T_H["temperature_point_bit"]/10.0, 'humidity': T_H["humidity_bit"]+T_H["humidity_point_bit"]/10.0, 'check_bit': T_H["check_bit"]}], 'check': data["check"],"date":time.time()}
+        return datea
+
+    def auto_getdata(self,errortimes=3):
+        for i in range(errortimes+1):
+            data = self.get_data(True)
+            if self.check == True:
+                return self.datea(data)
+            else:
+                self.reset()
+        return {"data": "Error"}
+
+    def reset(self):
+        print "reset"
+        self.__delete__()
+        time.sleep(1)
+        self.__init__(self.TH_pin)
 
     def __delete__(self):
         GPIO.cleanup()
@@ -88,5 +95,6 @@ if __name__ == '__main__':
     T = T_H(THpin=6)
     # print T.get_data()
     # data = [0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0]
-    print T_H.parse_data(T.get_data())
+
+    print T.auto_getdata()
 
