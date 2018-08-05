@@ -47,9 +47,9 @@ class T_H(object):
         if not data:
             return False
         data_item = ("humidity_bit", "humidity_point_bit", "temperature_bit", "temperature_point_bit", "check_bit")
-        data_tmp = {"check": None, "data": [{}]}
+        data_tmp = {"check": None, "data": {}}
         for i, d in zip(range(0, 41, 8), range(5)):
-            data_tmp["data"][0].update(dict([(data_item[d], int(reduce(lambda a, b: str(a) + str(b), data[i:i + 8]), 2))]))
+            data_tmp["data"].update(dict([(data_item[d], int(reduce(lambda a, b: str(a) + str(b), data[i:i + 8]), 2))]))
 
         return data_tmp
 
@@ -58,7 +58,7 @@ class T_H(object):
             self.check = None
             return False
 
-        if sum(data_tmp["data"][0].values()) - data_tmp["data"][0]["check_bit"]*2 == 0:
+        if sum(data_tmp["data"].values()) - data_tmp["data"]["check_bit"]*2 == 0:
             data_tmp["check"] = True
             self.check = True
             return data_tmp
@@ -68,9 +68,12 @@ class T_H(object):
             return data_tmp
 
     def datea(self,data):
-        #{'data': [{'temperature_bit': 14, 'humidity_point_bit': 128, 'temperature_point_bit': 128, 'check_bit': 50, 'humidity_bit': 163}], 'check': False}
-        T_H = data['data'][0]
-        datea = {'data': [{'temperature': T_H["temperature_bit"]+T_H["temperature_point_bit"]/10.0, 'humidity': T_H["humidity_bit"]+T_H["humidity_point_bit"]/10.0, 'check_bit': T_H["check_bit"]}], 'check': data["check"],"date":time.time()}
+        #{'data': {'temperature_bit': 14, 'humidity_point_bit': 128, 'temperature_point_bit': 128, 'check_bit': 50, 'humidity_bit': 163}, 'check': False}
+        T_H = data['data']
+        datea = {'data': {'temperature': T_H["temperature_bit"]+T_H["temperature_point_bit"]/10.0,
+                          'humidity': T_H["humidity_bit"]+T_H["humidity_point_bit"]/10.0,
+                          'check_bit': T_H["check_bit"]},
+                 'check': data["check"],"date":time.time()}
         return datea
 
     def auto_getdata(self,errortimes=3):
@@ -80,7 +83,7 @@ class T_H(object):
                 return self.datea(data)
             else:
                 self.reset()
-        return {"data": "Error"}
+        return {"date":time.time(), 'data': 'Error', 'check': False}
 
     def reset(self):
         print "reset"
