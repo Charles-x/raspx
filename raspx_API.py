@@ -18,7 +18,6 @@ class T_H(Resource):
     def get(self):
         from DHT11 import T_H
         data = T_H.auto_getdata(THpin=6)
-        print data
         response = make_response(jsonify(data))
         response.headers['Content-Type'] = 'application/json'
         return response
