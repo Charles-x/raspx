@@ -3,7 +3,7 @@
 
 
 from flask import Flask,make_response,jsonify,Response
-from flask_restful import Resource, Api
+from flask_restful import Resource, Api,reqparse
 from flask_cors import *
 from pinfo import Pifo
 
@@ -50,12 +50,33 @@ class soil_H(Resource):
     def get(self):
         return "building..."
 
+class irrigate(Resource):
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('second', type=int)
+
+    def get(self):
+        data = {}
+        response = make_response(jsonify(data))
+        response.headers['Content-Type'] = 'application/json'
+        get_data =self.parser.parse_args()
+        tm =get_data.get('second')
+        from relay import Relay
+        rp = Relay(pin=5)
+        rp.connect(tm)
+        return True
+
+
+
+
 
 
 api.add_resource(T_H, '/T_H')
 api.add_resource(pic,"/pic")
 api.add_resource(pinfo,"/pinfo")
 api.add_resource(soil_H,"/soil_H")
+api.add_resource(irrigate,"/irrigate")
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=8080,debug=True)

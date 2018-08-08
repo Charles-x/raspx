@@ -6,7 +6,7 @@ import time
 import datetime
 """set camera"""
 camera = PiCamera()
-camera.resolution = (320,240)
+camera.resolution = (800,600)
 camera.framerate = 15
 
 camera.start_preview()

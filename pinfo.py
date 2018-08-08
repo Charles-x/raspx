@@ -36,9 +36,9 @@ class Pifo:
         mem_percent_used = mem.percent
         mem_used = mem.used / 2 ** 20
         mem_free = mem.free / 2 ** 20
-        return {"Memory_Total":str("{0:.2f}GB".format(mem_total)),
+        return {"Memory_Total":str("{0:.2f}MB".format(mem_total)),
                 "Memory_Available":str("{0:.2f}MB".format(mem_avail)),
-                "Memory_Used":str("{0:.2f}%".format(mem_percent_used)),
+                "Memory_Used_Persents":str("{0:.2f}%".format(mem_percent_used)),
                 "Memory_Used":str("{0:.2f}MB".format(mem_used)),
                 "Memory_Free":str("{0:.2f}MB".format(mem_free))}
     @property
@@ -88,5 +88,5 @@ if __name__ == '__main__':
             "mem":pi.mem_info,
             "net":pi.net_info,
             "uptime":pi.uptime}
-
-    print data
+    import pprint
+    pprint.pprint(data)
