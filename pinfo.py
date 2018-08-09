@@ -83,10 +83,12 @@ class Pifo:
 
 if __name__ == '__main__':
     pi = Pifo()
-    data = {"cpu": pi.cpu_info,
-            "disk": pi.disk_info,
-            "mem":pi.mem_info,
-            "net":pi.net_info,
-            "uptime":pi.uptime}
+    data = {"status": "ok",
+            'data': {"model": "Raspberry Pi 3B",
+                     "cpu": pi.cpu_info,
+                     "disk": pi.disk_info,
+                     "mem": pi.mem_info,
+                     "net": pi.net_info,
+                     "uptime": pi.uptime}}
     import pprint
     pprint.pprint(data)

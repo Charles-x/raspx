@@ -60,6 +60,14 @@ class xADC:
         data = {'status':'ok','data':{"light":self.read(0),"T":self.read(1),"external":self.read(2),"0-5v":self.read(3)}}
         return data
 
+    def interpret(self,data):
+        '''
+        :light > 50,dark
+        :light >100,
+        :return:
+        '''
+        pass
+
 if __name__ == "__main__":
     adc = xADC()
     while True:

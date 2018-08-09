@@ -21,35 +21,38 @@ api = Api(app)
 lock_dic = { 'T_H': 0,'pinfo': 0,'pic': 0,'soil_H': 0,'irrigate': 0}
 
 
-#lock decorator
-def xlock(lockname):
-    def verify(func):
-        @wraps(func)
-        def verify_func(*args, **kwargs):
-            global lock_dic
-            if lock_dic[lockname] == 0:
-                lock_dic[lockname] = 1
-                try:
-                    data = func(*args,**kwargs)
-                    lock_dic[lockname] = 0
-                except:
-                    data = {"status":lock_dic[lockname]}
-                    lock_dic[lockname] = -1
-                finally:
-                    return data
-            else:
-                return {"status":lock_dic[lockname]}
-        return verify_func
-    return verify
+class tool_box:
 
-def xresponse(data,type):
-    if type =='application/json':
-        data = jsonify({}.update(data))
-    response = make_response(data)
-    response.headers['Content-Type'] = type
-    return response
+    @staticmethod
+    def xlock(lockname):
+        def verify(func):
+            @wraps(func)
+            def verify_func(*args, **kwargs):
+                global lock_dic
+                if lock_dic[lockname] == 0:
+                    lock_dic[lockname] = 1
+                    try:
+                        data = func(*args,**kwargs)
+                        lock_dic[lockname] = 0
+                    except:
+                        data = {"status":lock_dic[lockname]}
+                        lock_dic[lockname] = -1
+                    finally:
+                        return data
+                else:
+                    return {"status":lock_dic[lockname]}
+            return verify_func
+        return verify
 
-# funcation list
+    @staticmethod
+    def xresponse(data,type):
+        if type =='application/json':
+            data = jsonify({}.update(data))
+        response = make_response(data)
+        response.headers['Content-Type'] = type
+        return response
+
+# function list
 
 class T_H(Resource):
     def get(self):
@@ -62,11 +65,13 @@ class T_H(Resource):
 class pinfo(Resource):
     def get(self):
         pi = Pifo()
-        data = {"cpu": pi.cpu_info,
-                "disk": pi.disk_info,
-                "mem": pi.mem_info,
-                "net": pi.net_info,
-                "uptime": pi.uptime}
+        data = {"status":"ok",
+                'data':{"model":"Raspberry Pi 3B",
+                        "cpu": pi.cpu_info,
+                        "disk": pi.disk_info,
+                        "mem": pi.mem_info,
+                        "net": pi.net_info,
+                        "uptime": pi.uptime}}
         response = make_response(jsonify(data))
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -106,18 +111,20 @@ class irrigate(Resource):
 
     def get(self):
         data = {'status':'error'}
-        response = make_response(jsonify(data))
-        response.headers['Content-Type'] = 'application/json'
+
         get_data =self.parser.parse_args()
         tm =get_data.setdefault('second',1)
         from relay import Relay
         rp = Relay(pin=5)
         try:
             rp.connect(tm)
-            data.update({'status':'ok','time':tm})
+            data.update({'status':'ok','second':tm})
         except:
-            data.update({'time':tm})
-        finally: return response
+            data.update({'second':tm})
+        finally:
+            response = make_response(jsonify(data))
+            response.headers['Content-Type'] = 'application/json'
+            return response
 
 
 # resource list
