@@ -112,8 +112,6 @@ class tool_box:
         return inner
 
 
-
-
 # function list
 
 class T_H(Resource):
@@ -211,7 +209,6 @@ class Guest_log(Resource):
         response.headers['Content-Type'] = 'application/json'
         return response
 
-
 class Login(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
@@ -227,27 +224,28 @@ class Login(Resource):
         # json_data = request.get_json(force=True)
         # print json_data
         get_data = self.parser.parse_args()
+        Bonsai_name = "Charles Xiao's Bonsai~"
         print get_data
-        data = {'status':None,'token':None}
+        data = {'status':None,'token':None,'Bonsai_name':Bonsai_name}
         username = get_data.setdefault('username',None)
         password = get_data.setdefault('password',None)
         if username =="admin" and password =="admin":
             token = "abcd"
-            data =  {'status':True,'token':token}
+            sdata =  {'status':True,'token':token}
+            data.update(sdata)
             response = make_response(jsonify(data))
             response.headers['Content-Type'] = 'application/json'
             return response
         else:
-            data = {'status':False,'token':None}
+            sdata = {'status':False,'token':None}
+            data.update(sdata)
             response = make_response(jsonify(data))
             response.headers['Content-Type'] = 'application/json'
             return response
 
 
-
-   # System init
+# System init
 tool_box.xinit()
-
 
 
 # resource list
