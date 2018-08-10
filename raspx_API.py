@@ -89,7 +89,10 @@ class pic(Resource):
         import xpicture
         picpath = '/home/pi/Pictures/test.jpg'
         pica = xpicture.xpic(picpath, "800x600")
-        pic_data = pica.capture()
+        try:
+            pic_data = pica.capture()
+        except Exception as e :
+            return e
         pic_upload_link = 'http://vps.sea.ink'
         data = pic_data.update({'link':pic_upload_link})
         response = make_response(jsonify(pic_data))

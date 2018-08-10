@@ -24,7 +24,7 @@ class xADC:
     #------------------------------------------------------
     '''
     def __init__(self,Addr=0x48):
-        # for RPI version 1, use "bus = smbus.SMBus(0)
+        '''for RPI version 1, use "bus = smbus.SMBus(0)'''
         if not Addr:
             return {'status':'error','message':'Check it by sudo i2cdetect -y 1'}
         self.address = Addr
@@ -51,9 +51,9 @@ class xADC:
             temp = val # move string value to temp
             temp = int(temp) # change string to integer
             # print temp to see on terminal else comment out
-            bus.write_byte_data(address, 0x40, temp)
+            bus.write_byte_data(self.address, 0x40, temp)
         except Exception, e:
-            print "Error: Device address: 0x%2X" % address
+            print "Error: Device address: 0x%2X" % self.address
             print e
 
     def auto_read(self):
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         print 'AIN1 = ', adc.read(1), "T"
         print 'AIN2 = ', adc.read(2), "external"
         print 'AIN3 = ', adc.read(3), "0-5v"
-        tmp = read(0)
+        tmp = adc.read(0)
         tmp = tmp*(255-125)/255+125 # LED won't light up below 125, so convert '0-255' to '125-255'
-        write(tmp)
+        adc.write(tmp)
         time.sleep(1)
