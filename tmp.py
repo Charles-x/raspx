@@ -24,21 +24,30 @@ def xlock(lockname):
         return verify_func
     return verify
 
-@xlock("pic")
-def pic():
-    return "pic"
-
-#
-# print pic()
-# print lock_dic
-# print pic()
+import os
 import time
-now = time.time()
-print type(now)
-# print time.strftime('%Y-%m-%d %H:%M:%S %a', time.localtime(now))
 
-with open("/tmp/.cache",'r+') as f:
-    f.seek(13,0)
-    print f.read()
-    f.close()
+
+def Guestbook(action):
+    xnote = '.xnote.dat'
+    if not os.path.isfile(xnote):
+        open(xnote,'w').close()
+    def inner(func):
+        @wraps(func)
+        def logx(*args,**kwargs):
+            with open(xnote,"a+") as f:
+                ctime = str(time.strftime('%Y-%m-%d %H:%M:%S %a', time.localtime(Now)))
+                xn = "\t" + action+"\n"
+                f.write(ctime+xn)
+                f.close()
+            return func(*args,**kwargs)
+        return logx
+    return inner
+
+from tinydb import TinyDB
+
+db = TinyDB('/tmp/test.db')
+action = "看了一次温度~"
+nowtime = time.strftime('%Y-%m-%d %H:%M:%S %a', time.localtime(time.time()))
+db.insert({'time':nowtime,'action':action})
 
