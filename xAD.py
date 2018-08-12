@@ -98,7 +98,7 @@ class xADC:
         if 230 <= light <= 255:
             light_s = "好黑"
         elif 200 <= light < 230:
-            light_s = "有点光"
+            light_s = "不亮"
         elif 180 <= light < 200:
             light_s = "亮"
         elif 100 <= light < 180:
@@ -107,9 +107,11 @@ class xADC:
             light_s = "亮瞎"
         soil_p = round((1- (soil-80)/175),1)*10
         if soil < 100:
-            soil_s = "水有点多"
+            soil_s = "多水"
         elif soil < 135:
-            soil_s = "该浇水了"
+            soil_s = "挺好"
+        elif soil < 180:
+            soil_s = "少水"
         elif soil < 200:
             soil_s = "好干"
         elif soil <= 255:
