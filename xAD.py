@@ -95,15 +95,15 @@ class xADC:
         soil = self.read(3)
         light_s = ""
         soil_s = ""
-        if 230 < light <= 255:
+        if 230 <= light <= 255:
             light_s = "好黑"
-        elif 250 < light < 230:
+        elif 200 <= light < 230:
             light_s = "有点光"
-        elif 230 < light < 200:
+        elif 180 <= light < 200:
             light_s = "亮"
-        elif 200 < light < 180:
+        elif 100 <= light < 180:
             light_s = "很亮"
-        elif 0 < light < 100:
+        elif 0 <= light < 100:
             light_s = "亮瞎"
         soil_p = round((1- (soil-80)/175),1)*10
         if soil < 100:

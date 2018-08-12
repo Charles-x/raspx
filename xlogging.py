@@ -53,7 +53,7 @@ class xlog:
 
 
 if __name__ == '__main__':
-    data = {'fdsafds':43243243,"fdsafdsad":"004u3nujo32 43290uj432 ","fdsa":[12,321,32,13,12]}
+    data = {'name':1,"sex":"male","id":[12,123,1234,2,23]}
     xg = xlog('/tmp/test.xlog')
     xg.write(data)
     a = xg.read()
