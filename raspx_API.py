@@ -9,7 +9,7 @@ from functools import wraps
 from pinfo import Pifo
 from xAD import xADC
 # from tinydb import TinyDB, Query
-from xlogging import xlog
+from xlogging import xlog,xLOCK
 import os
 import time
 import fcntl
@@ -23,20 +23,6 @@ api = Api(app)
 lock_dic = { 'T_H': 0,'pinfo': 0,'pic': 0,'soil_H': 0,'irrigate': 0}
 
 
-class xLOCK:
-    def __init__(self, name='/tmp/.raspx_cached/xLOCK.L'):
-        self.flock = open(name, 'w')
-        self.fid = self.flock.fileno()
-
-    def lock(self):
-        try:
-            fcntl.lockf(self.fid, fcntl.LOCK_SH)
-            return True
-        except:
-            return False
-
-    def unlock(self):
-        self.flock.close()
 
 class tool_box:
     xnote = '.xnote.dat'

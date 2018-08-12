@@ -122,11 +122,11 @@ class xADC:
 if __name__ == "__main__":
     adc = xADC()
     while True:
-        print 'AIN0 = P5 = light = 0x41 ', adc.read(0)
-        print 'AIN1 = P4 = T     = 0x42 ', adc.read(1)
-        print 'AIN2 = P5 = None  = 0x43 ', adc.read(2)
-        print 'AIN3 = P6 = 0~5V  = 0x40 ', adc.read(3)
-        print '\n'*5
+        print('AIN0 = P5 = light = 0x41 ', adc.read(0))
+        print('AIN1 = P4 = T     = 0x42 ', adc.read(1))
+        print('AIN2 = P5 = None  = 0x43 ', adc.read(2))
+        print('AIN3 = P6 = 0~5V  = 0x40 ', adc.read(3))
+        print('\n'*5)
         # tmp = adc.read(0)
         # tmp = tmp*(255-125)/255+125 # LED won't light up below 125, so convert '0-255' to '125-255'
         # adc.write(200)

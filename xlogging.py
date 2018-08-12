@@ -5,8 +5,12 @@ import fcntl
 import os
 
 class xLOCK:
-    def __init__(self, name='/tmp/.raspx_cached/xLOCK.L'):
-        self.flock = open(name, 'w')
+    def __init__(self, lockname='/tmp/.raspx_cached/xLOCK.L'):
+        if not os.path.isdir('/tmp/.raspx_cached'):
+            os.mkdir('/tmp/.raspx_cached')
+        if not os.path.isfile(lockname):
+            open(lockname, 'w').close()
+        self.flock = open(lockname, 'w')
         self.fid = self.flock.fileno()
 
     def lock(self):

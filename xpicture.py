@@ -24,7 +24,7 @@ class xpic():
                 cachefile.write(str(round(time.time(),0))+"D")
                 cachefile.close()
 
-    def capture(self,time_of_exposure=2,size = 14):
+    def capture(self,time_of_exposure=2,size = 18):
         if self.status_cache():
             Now = round(time.time(),0)
             self.write_cache(Now)
