@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#coding:utf-8
+# coding:utf-8
 import RPi
 import RPi.GPIO as GPIO
 import time
@@ -21,6 +21,7 @@ class DHT11Result:
 
     def is_valid(self):
         return self.error_code == DHT11Result.ERR_NO_ERROR
+
 
 class DHT11:
     'DHT11 sensor reader class for Raspberry'
@@ -85,8 +86,8 @@ class DHT11:
         STATE_DATA_PULL_UP = 4
         STATE_DATA_PULL_DOWN = 5
         state = STATE_INIT_PULL_DOWN
-        lengths = [] # will contain the lengths of data pull up periods
-        current_length = 0 # will contain the length of the previous period
+        lengths = []  # will contain the lengths of data pull up periods
+        current_length = 0  # will contain the length of the previous period
         for i in range(len(data)):
             current = data[i]
             current_length += 1
@@ -173,21 +174,27 @@ class DHT11:
     def __calculate_checksum(self, the_bytes):
         return the_bytes[0] + the_bytes[1] + the_bytes[2] + the_bytes[3] & 255
 
+
 class T_H():
 
     @staticmethod
-    def auto_getdata(THpin,humidity_deviation=20):
-        #{'date': 1533465137.254068, 'data': {'check_bit': 107, 'temperature': 30.5, 'humidity': 72.0}, 'check': True}
-        #{"date":time.time(), 'data': 'Error', 'check': False}
+    def auto_getdata(THpin, humidity_deviation=20):
+        # {'date': 1533465137.254068, 'data': {'check_bit': 107, 'temperature': 30.5, 'humidity': 72.0}, 'check': True}
+        # {"date":time.time(), 'data': 'Error', 'check': False}
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         # GPIO.cleanup()
         instance = DHT11(THpin)
         result = instance.read()
-        data = {"time":time.time(), 'data': 'Error', 'check': False}
+        data = {"time": time.time(), 'data': 'Error', 'check': False}
+        attempts = 0
         if result.is_valid():
-            data = {'time': time.time(), 'data': {'temperature': result.temperature, 'humidity': result.humidity-humidity_deviation}, 'check': result.is_valid()}
+            data = {'time': time.time(),
+                    'data': {'temperature': result.temperature, 'humidity': result.humidity - humidity_deviation},
+                    'check': result.is_valid()}
+
         return data
+
 
 if __name__ == '__main__':
     # GPIO.setwarnings(False)
@@ -202,4 +209,4 @@ if __name__ == '__main__':
     #     print("Temperature: %d C" % result.temperature)
     #     print("Humidity: %d %%" % result.humidity)
 
-    print T_H.auto_getdata(24)
+    print T_H.auto_getdata(25)

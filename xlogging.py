@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-#coding:utf-8
+# coding:utf-8
 
 import fcntl
 import os
+
 
 class xLOCK:
     def __init__(self, lockname='/tmp/.raspx_cached/xLOCK.L'):
@@ -24,16 +25,17 @@ class xLOCK:
     def unlock(self):
         self.flock.close()
 
+
 class xlog:
-    def __init__(self,logfile):
+    def __init__(self, logfile):
         if not os.path.isfile(logfile):
-            open(logfile,'w').close()
+            open(logfile, 'w').close()
         self.logfile = logfile
         self.lock = xLOCK()
 
-    def write(self,data):
+    def write(self, data):
         try:
-            with open(self.logfile,'a+') as f:
+            with open(self.logfile, 'a+') as f:
                 self.lock.lock()
                 f.write(str(data))
                 f.write('#^#')
@@ -57,7 +59,7 @@ class xlog:
 
 
 if __name__ == '__main__':
-    data = {'name':1,"sex":"male","id":[12,123,1234,2,23]}
+    data = {'name': 1, "sex": "male", "id": [12, 123, 1234, 2, 23]}
     xg = xlog('/tmp/test.xlog')
     xg.write(data)
     a = xg.read()

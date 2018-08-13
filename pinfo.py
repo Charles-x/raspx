@@ -3,6 +3,7 @@ from __future__ import division
 # from subprocess import PIPE, Popen
 import psutil
 
+
 class Pifo:
 
     @property
@@ -13,8 +14,8 @@ class Pifo:
         with open('/sys/class/thermal/thermal_zone0/temp') as f:
             temp = f.read()
             f.close()
-        cpu_percent = psutil.cpu_percent(interval=1,percpu=False)
-        return {"CPU_Workload":"{}%".format(cpu_percent),
+        cpu_percent = psutil.cpu_percent(interval=1, percpu=False)
+        return {"CPU_Workload": "{}%".format(cpu_percent),
                 "CPU_Temperature": "{0:.1f}'C".format(int(temp) / 10 ** 3)}
 
     @property
@@ -24,10 +25,11 @@ class Pifo:
         disk_used = disk.used / 2 ** 30
         disk_free = disk.free / 2 ** 30
         disk_percent_used = disk.percent
-        return {"Disk_Total":str("{0:.2f}GB".format(disk_total)),
-                "Disk_Used":str("{0:.2f}GB".format(disk_used)),
-                "Disk_Used_Persents":str("{0:.2f}%".format(disk_percent_used)),
-                "Disk_Free":str("{0:.2f}GB".format(disk_free))}
+        return {"Disk_Total": str("{0:.2f}GB".format(disk_total)),
+                "Disk_Used": str("{0:.2f}GB".format(disk_used)),
+                "Disk_Used_Persents": str("{0:.2f}%".format(disk_percent_used)),
+                "Disk_Free": str("{0:.2f}GB".format(disk_free))}
+
     @property
     def mem_info(self):
         mem = psutil.virtual_memory()
@@ -36,11 +38,12 @@ class Pifo:
         mem_percent_used = mem.percent
         mem_used = mem.used / 2 ** 20
         mem_free = mem.free / 2 ** 20
-        return {"Memory_Total":str("{0:.2f}MB".format(mem_total)),
-                "Memory_Available":str("{0:.2f}MB".format(mem_avail)),
-                "Memory_Used_Persents":str("{0:.2f}%".format(mem_percent_used)),
-                "Memory_Used":str("{0:.2f}MB".format(mem_used)),
-                "Memory_Free":str("{0:.2f}MB".format(mem_free))}
+        return {"Memory_Total": str("{0:.2f}MB".format(mem_total)),
+                "Memory_Available": str("{0:.2f}MB".format(mem_avail)),
+                "Memory_Used_Persents": str("{0:.2f}%".format(mem_percent_used)),
+                "Memory_Used": str("{0:.2f}MB".format(mem_used)),
+                "Memory_Free": str("{0:.2f}MB".format(mem_free))}
+
     @property
     def net_info(self):
         IP = []
@@ -53,8 +56,8 @@ class Pifo:
         net = psutil.net_io_counters()
         eth = psutil.net_if_addrs()["eth0"][0]
         wlan = psutil.net_if_addrs()["wlan0"][0]
-        net_bytes_sent = net.bytes_sent / 2**20
-        net_bytes_recv = net.bytes_recv / 2**20
+        net_bytes_sent = net.bytes_sent / 2 ** 20
+        net_bytes_recv = net.bytes_recv / 2 ** 20
 
         # net_errin = net.errin
         # net_errout = net.errout
@@ -66,20 +69,29 @@ class Pifo:
         #         "Network Errors Sending":str(net_errout),
         #         "Incoming Packets Dropped":str(net_dropin),
         #         "Outgoing Packets Dropped":str(net_dropout)}
-        return {"Network_Sent":str("{0:.2f}MB".format(net_bytes_sent)),
-                "Network_Received":str("{0:.2f}MB".format(net_bytes_recv)),
-                "IP_Address":IP}
+        return {"Network_Sent": str("{0:.2f}MB".format(net_bytes_sent)),
+                "Network_Received": str("{0:.2f}MB".format(net_bytes_recv)),
+                "IP_Address": IP}
+
     @property
     def uptime(self):
         with open('/proc/uptime') as f:
             t = f.read()
             f.close()
-        ut = int(float(t.split(" ")[0])/60)
-        return {"uptime": "{} day {} hours {} minutes".format(ut//60//24,ut//60,ut%60)}
+        ut = int(float(t.split(" ")[0]) / 60)
+        return {"uptime": "{} day {} hours {} minutes".format(ut // 60 // 24, ut // 60, ut % 60)}
 
     @property
     def piall(self):
-        return
+        data = {"status": "ok",
+                'data': {"model": "Raspberry Pi 3B",
+                         "cpu": self.cpu_info,
+                         "disk": self.disk_info,
+                         "mem": self.mem_info,
+                         "net": self.net_info,
+                         "uptime": self.uptime}}
+        return data
+
 
 if __name__ == '__main__':
     pi = Pifo()
@@ -91,4 +103,5 @@ if __name__ == '__main__':
                      "net": pi.net_info,
                      "uptime": pi.uptime}}
     import pprint
+
     pprint.pprint(data)

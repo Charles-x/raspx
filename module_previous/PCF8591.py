@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-#coding:utf-8
+# coding:utf-8
 import smbus
 import time
+
 
 class xADC:
     '''
@@ -23,37 +24,38 @@ class xADC:
     #
     #------------------------------------------------------
     '''
-    def __init__(self,Addr=0x48):
+
+    def __init__(self, Addr=0x48):
         '''for RPI version 1, use "bus = smbus.SMBus(0)'''
         if not Addr:
-            return {'status':'error','message':'Check it by sudo i2cdetect -y 1'}
+            return {'status': 'error', 'message': 'Check it by sudo i2cdetect -y 1'}
         self.address = Addr
         self.bus = smbus.SMBus(1)
 
-    def read(self,chn): #channel
+    def read(self, chn):  # channel
         '''
 c
         '''
         try:
             if chn == 0:
-                self.bus.write_byte(self.address,0x40)
+                self.bus.write_byte(self.address, 0x40)
                 self.bus.read_byte(self.address)
             if chn == 1:
-                self.bus.write_byte(self.address,0x41)
+                self.bus.write_byte(self.address, 0x41)
             if chn == 2:
-                self.bus.write_byte(self.address,0x42)
+                self.bus.write_byte(self.address, 0x42)
             if chn == 3:
-                self.bus.write_byte(self.address,0x43)
+                self.bus.write_byte(self.address, 0x43)
                 # self.bus.read_byte(self.address) # dummy read to start conversion
         except Exception, e:
             print "Address: %s" % self.address
             print e
         return self.bus.read_byte(self.address)
 
-    def write(self,val):
+    def write(self, val):
         try:
-            temp = val # move string value to temp
-            temp = int(temp) # change string to integer
+            temp = val  # move string value to temp
+            temp = int(temp)  # change string to integer
             # print temp to see on terminal else comment out
             self.bus.write_byte_data(self.address, 0x40, temp)
         except Exception, e:
@@ -61,10 +63,11 @@ c
             print e
 
     def auto_read(self):
-        data = {'status':'ok','data':{"light":self.read(1),"T":self.read(1),"external":self.read(2),"0-5v":self.read(3)}}
+        data = {'status': 'ok',
+                'data': {"light": self.read(1), "T": self.read(1), "external": self.read(2), "0-5v": self.read(3)}}
         return data
 
-    def interpret(self,data):
+    def interpret(self, data):
         '''
         #light
         :230 > light > 250,Dark
@@ -78,6 +81,7 @@ c
         '''
         pass
 
+
 if __name__ == "__main__":
     adc = xADC()
     while True:
@@ -85,9 +89,9 @@ if __name__ == "__main__":
         print 'AIN1 = P4 = T     = 0x42 ', adc.read(1)
         print 'AIN2 = P5 = None  = 0x43 ', adc.read(2)
         print 'AIN3 = P6 = 0~5V  = 0x40 ', adc.read(3)
-        print '\n'*5
+        print '\n' * 5
         # tmp = adc.read(0)
         # tmp = tmp*(255-125)/255+125 # LED won't light up below 125, so convert '0-255' to '125-255'
         # adc.write(200)
         time.sleep(1)
-        #"external"
+        # "external"

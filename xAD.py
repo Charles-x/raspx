@@ -6,7 +6,6 @@ import smbus
 import time
 
 
-
 # 0x00 - 0x03 is AIN0 - AIN3
 # bus.write_byte(address,0x00)
 class xADC:
@@ -30,21 +29,22 @@ class xADC:
     #
     #------------------------------------------------------
     '''
-    def __init__(self,Addr=0x48):
+
+    def __init__(self, Addr=0x48):
         '''for RPI version 1, use "bus = smbus.SMBus(0)'''
         if not Addr:
-            raise {'status':'error','message':'Check it by sudo i2cdetect -y 1'}
+            raise {'status': 'error', 'message': 'Check it by sudo i2cdetect -y 1'}
         self.address = Addr
         self.bus = smbus.SMBus(1)
 
-    def read(self,AIN): #channel
-        if AIN ==0:
+    def read(self, AIN):  # channel
+        if AIN == 0:
             adr = 0x40
-        elif AIN ==1:
+        elif AIN == 1:
             adr = 0x41
-        elif AIN ==2:
+        elif AIN == 2:
             adr = 0x42
-        elif AIN ==3:
+        elif AIN == 3:
             adr = 0x43
         try:
             self.bus.write_byte(self.address, adr)
@@ -56,7 +56,7 @@ class xADC:
         finally:
             pass
 
-    def write(self,var_int):
+    def write(self, var_int):
         '''
         write to ANIOUT
         '''
@@ -64,8 +64,7 @@ class xADC:
             self.bus.write_byte_data(self.address, 0x40, var_int)
             return self.read(2)
         except Exception as e:
-            return (e,"Error: Device address: 0x%2X" % self.address)
-
+            return (e, "Error: Device address: 0x%2X" % self.address)
 
     def auto_read(self):
         '''
@@ -76,7 +75,8 @@ class xADC:
         'AOUT -> AIN2
         :return:
         '''
-        data = {'status':'ok','data':{"light":self.read(0),"T":self.read(1),"external":self.read(3),"0-5v":self.read(2)}}
+        data = {'status': 'ok',
+                'data': {"light": self.read(0), "T": self.read(1), "external": self.read(3), "0-5v": self.read(2)}}
         return data
 
     def interpret(self):
@@ -98,17 +98,18 @@ class xADC:
         if 230 <= light <= 255:
             light_s = "好黑"
         elif 200 <= light < 230:
-            light_s = "不亮"
+            light_s = "亮了"
         elif 180 <= light < 200:
-            light_s = "亮"
+            light_s = "好亮"
         elif 100 <= light < 180:
             light_s = "很亮"
         elif 0 <= light < 100:
             light_s = "亮瞎"
-        soil_p = round((1- (soil-80)/175),1)*10
+        # soil_p = round((1- (soil-80)/175),1)*10
+        soil_p = round(round((1 - (soil - 70) / 255), 2) * 100, 1)
         if soil < 100:
             soil_s = "多水"
-        elif soil < 135:
+        elif soil < 150:
             soil_s = "挺好"
         elif soil < 180:
             soil_s = "少水"
@@ -116,9 +117,10 @@ class xADC:
             soil_s = "好干"
         elif soil <= 255:
             soil_s = "特干"
-        data = {'status':'ok','data':{"light":light,"light_s":light_s,"T":self.read(1),"soil":soil,"soil_s":soil_s,"soil_p":soil_p,"0-5v":self.read(2)}}
+        data = {'status': 'ok',
+                'data': {"light": light, "light_s": light_s, "T": self.read(1), "soil": soil, "soil_s": soil_s,
+                         "soil_p": soil_p, "0-5v": self.read(2)}}
         return data
-
 
 
 if __name__ == "__main__":
@@ -128,9 +130,9 @@ if __name__ == "__main__":
         print('AIN1 = P4 = T     = 0x42 ', adc.read(1))
         print('AIN2 = P5 = None  = 0x43 ', adc.read(2))
         print('AIN3 = P6 = 0~5V  = 0x40 ', adc.read(3))
-        print('\n'*5)
+        print('\n' * 5)
         # tmp = adc.read(0)
         # tmp = tmp*(255-125)/255+125 # LED won't light up below 125, so convert '0-255' to '125-255'
         # adc.write(200)
         time.sleep(1)
-        #"external"
+        # "external"

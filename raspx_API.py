@@ -1,31 +1,32 @@
 #!/usr/bin/env python
-#coding:utf-8
+# coding:utf-8
 
 
-from flask import Flask,make_response,jsonify,Response
-from flask_restful import Resource, Api,reqparse
+from flask import Flask, make_response, jsonify, Response
+from flask_restful import Resource, Api, reqparse
 from flask_cors import *
 from functools import wraps
 from pinfo import Pifo
 from xAD import xADC
 # from tinydb import TinyDB, Query
-from xlogging import xlog,xLOCK
+from xlogging import xlog, xLOCK
 import os
 import time
 import fcntl
 
 app = Flask(__name__)
 # cross origin to access
-CORS(app,supports_credentials=True)
+CORS(app, supports_credentials=True)
 api = Api(app)
 
 # lock dic
-lock_dic = { 'T_H': 0,'pinfo': 0,'pic': 0,'soil_H': 0,'irrigate': 0}
+lock_dic = {'T_H': 0, 'pinfo': 0, 'pic': 0, 'soil_H': 0, 'irrigate': 0}
+
 
 class config_center:
     relay_pin = 26
     soil_H_Digtal_pin = 23
-    T_H_pin = 24
+    T_H_pin = 25
 
 
 class tool_box:
@@ -33,9 +34,10 @@ class tool_box:
     nowtime = time.strftime('%Y-%m-%d %H:%M:%S %a', time.localtime(time.time()))
     # db = TinyDB(xnote)
     logx = xlog(xnote)
+
     @staticmethod
     def xinit():
-        tool_box.Guestlog('System runing...',None)
+        tool_box.Guestlog('System runing...', None)
 
     @staticmethod
     def xlock(lockname):
@@ -46,21 +48,23 @@ class tool_box:
                 if lock_dic[lockname] == 0:
                     lock_dic[lockname] = 1
                     try:
-                        data = func(*args,**kwargs)
+                        data = func(*args, **kwargs)
                         lock_dic[lockname] = 0
                     except:
-                        data = {"status":lock_dic[lockname]}
+                        data = {"status": lock_dic[lockname]}
                         lock_dic[lockname] = -1
                     finally:
                         return data
                 else:
-                    return {"status":lock_dic[lockname]}
+                    return {"status": lock_dic[lockname]}
+
             return verify_func
+
         return verify
 
     @staticmethod
-    def xresponse(data,type):
-        if type =='json':
+    def xresponse(data, type):
+        if type == 'json':
             data = jsonify({}.update(data))
         elif type == 'image':
             type = 'image/png'
@@ -69,12 +73,12 @@ class tool_box:
         return response
 
     @staticmethod
-    def Guestlog(action,gtime):
+    def Guestlog(action, gtime):
         if gtime == None:
             ctime = str(time.strftime('%Y-%m-%d %H:%M:%S %a', time.localtime(time.time())))
         else:
             ctime = gtime
-        data = {'time':ctime,'action':action}
+        data = {'time': ctime, 'action': action}
 
         # xl = xLOCK()
         # xl.lock()
@@ -82,14 +86,12 @@ class tool_box:
         # xl.unlock()
         tool_box.logx.write(data)
 
-
-
     @staticmethod
     def Guestbook(action):
         def inner(func):
             @wraps(func)
             def logx(*args, **kwargs):
-                tool_box.Guestlog(action=action,gtime=None)
+                tool_box.Guestlog(action=action, gtime=None)
                 # with open(tool_box.xnote, "a+") as f:
                 #     ctime = str(time.strftime('%Y-%m-%d %H:%M:%S %a', time.localtime(time.time())))
                 #     xn = "\t" + action + "\n"
@@ -113,20 +115,16 @@ class T_H(Resource):
         response.headers['Content-Type'] = 'application/json'
         return response
 
+
 class pinfo(Resource):
     @tool_box.Guestbook("刷新了一下树莓派的硬件状态！")
     def get(self):
         pi = Pifo()
-        data = {"status":"ok",
-                'data':{"model":"Raspberry Pi 3B",
-                        "cpu": pi.cpu_info,
-                        "disk": pi.disk_info,
-                        "mem": pi.mem_info,
-                        "net": pi.net_info,
-                        "uptime": pi.uptime}}
+        data = pi.piall
         response = make_response(jsonify(data))
         response.headers['Content-Type'] = 'application/json'
         return response
+
 
 class pic(Resource):
     def __init__(self):
@@ -137,28 +135,28 @@ class pic(Resource):
     def get(self):
         UPLOAD_PATH = "/home/pi/Pictures"
         filename = "test.jpg"
-        image_data = open(os.path.join(UPLOAD_PATH,filename), "rb").read()
+        image_data = open(os.path.join(UPLOAD_PATH, filename), "rb").read()
         response = make_response(image_data)
         response.headers['Content-Type'] = 'image/png'
         return response
 
-
     def post(self):
         import xpicture
         picpath = '/home/pi/Pictures/test.jpg'
-        get_data =self.parser.parse_args()
-        picpx =get_data.setdefault('resolution',"800x600")
+        get_data = self.parser.parse_args()
+        picpx = get_data.setdefault('resolution', "800x600")
         pica = xpicture.xpic(picpath, picpx)
         try:
             pic_data = pica.capture()
-            tool_box.Guestlog("照了一张{}的植物照片~".format(picpx),None)
-        except Exception as e :
+            tool_box.Guestlog("照了一张{}的植物照片~".format(picpx), None)
+        except Exception as e:
             return e
         pic_upload_link = 'http://vps.sea.ink'
-        data = pic_data.update({'link':pic_upload_link})
+        data = pic_data.update({'link': pic_upload_link})
         response = make_response(jsonify(pic_data))
         response.headers['Content-Type'] = 'application/json'
         return response
+
 
 class soil_H(Resource):
     @tool_box.Guestbook("看了看光线亮度，感受下土壤湿度...")
@@ -169,35 +167,38 @@ class soil_H(Resource):
         response.headers['Content-Type'] = 'application/json'
         return response
 
+
 class irrigate(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('second', type=int)
 
     def get(self):
-        data = {'status':'error'}
-        get_data =self.parser.parse_args()
-        tm =get_data.setdefault('second',1)
+        data = {'status': 'error'}
+        get_data = self.parser.parse_args()
+        tm = get_data.setdefault('second', 1)
         from relay import Relay
         rp = Relay(pin=config_center.relay_pin)
         try:
             rp.connect(tm)
-            tool_box.Guestlog("浇水了一次，浇了{}秒钟！！".format(tm),None)
-            data.update({'status':'ok','second':tm})
+            tool_box.Guestlog("浇水了一次，浇了{}秒钟！！".format(tm), None)
+            data.update({'status': 'ok', 'second': tm})
         except:
-            data.update({'second':tm})
+            data.update({'second': tm})
         finally:
             response = make_response(jsonify(data))
             response.headers['Content-Type'] = 'application/json'
             return response
 
+
 class Guest_log(Resource):
     def get(self):
         data = tool_box.logx.read()
         # data = tool_box.db.all()
-        response = make_response(jsonify({'data':data}))
+        response = make_response(jsonify({'data': data}))
         response.headers['Content-Type'] = 'application/json'
         return response
+
 
 class Login(Resource):
     def __init__(self):
@@ -216,18 +217,18 @@ class Login(Resource):
         get_data = self.parser.parse_args()
         Bonsai_name = "Charles Xiao's Bonsai~"
         print get_data
-        data = {'status':None,'token':None,'Bonsai_name':Bonsai_name}
-        username = get_data.setdefault('username',None)
-        password = get_data.setdefault('password',None)
-        if username =="admin" and password =="admin":
+        data = {'status': None, 'token': None, 'Bonsai_name': Bonsai_name}
+        username = get_data.setdefault('username', None)
+        password = get_data.setdefault('password', None)
+        if username == "admin" and password == "admin":
             token = "abcd"
-            sdata =  {'status':True,'token':token}
+            sdata = {'status': True, 'token': token}
             data.update(sdata)
             response = make_response(jsonify(data))
             response.headers['Content-Type'] = 'application/json'
             return response
         else:
-            sdata = {'status':False,'token':None}
+            sdata = {'status': False, 'token': None}
             data.update(sdata)
             response = make_response(jsonify(data))
             response.headers['Content-Type'] = 'application/json'
@@ -237,15 +238,14 @@ class Login(Resource):
 # System init
 tool_box.xinit()
 
-
 # resource list
 api.add_resource(T_H, '/T_H')
-api.add_resource(pic,"/pic")
-api.add_resource(pinfo,"/pinfo")
-api.add_resource(soil_H,"/soil_H")
-api.add_resource(irrigate,"/irrigate")
-api.add_resource(Guest_log,"/Guest_log")
-api.add_resource(Login,"/Login")
+api.add_resource(pic, "/pic")
+api.add_resource(pinfo, "/pinfo")
+api.add_resource(soil_H, "/soil_H")
+api.add_resource(irrigate, "/irrigate")
+api.add_resource(Guest_log, "/Guest_log")
+api.add_resource(Login, "/Login")
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=8080,debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)
