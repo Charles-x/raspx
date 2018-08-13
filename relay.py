@@ -44,7 +44,7 @@ class Relay:
 if __name__ == '__main__':
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
-    water_relay_pin = 5
+    water_relay_pin = 26
     rp = Relay(water_relay_pin)
     print rp.status
     rp.twinkle(1,1,3)

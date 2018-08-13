@@ -22,6 +22,10 @@ api = Api(app)
 # lock dic
 lock_dic = { 'T_H': 0,'pinfo': 0,'pic': 0,'soil_H': 0,'irrigate': 0}
 
+class config_center:
+    relay_pin = 26
+    soil_H_Digtal_pin = 23
+    T_H_pin = 24
 
 
 class tool_box:
@@ -104,7 +108,7 @@ class T_H(Resource):
     @tool_box.Guestbook("看了一次温度~")
     def get(self):
         from DHT11 import T_H
-        data = T_H.auto_getdata(THpin=6)
+        data = T_H.auto_getdata(THpin=config_center.T_H_pin)
         response = make_response(jsonify(data))
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -175,7 +179,7 @@ class irrigate(Resource):
         get_data =self.parser.parse_args()
         tm =get_data.setdefault('second',1)
         from relay import Relay
-        rp = Relay(pin=5)
+        rp = Relay(pin=config_center.relay_pin)
         try:
             rp.connect(tm)
             tool_box.Guestlog("浇水了一次，浇了{}秒钟！！".format(tm),None)

@@ -202,4 +202,4 @@ if __name__ == '__main__':
     #     print("Temperature: %d C" % result.temperature)
     #     print("Humidity: %d %%" % result.humidity)
 
-    print T_H.auto_getdata(6)
+    print T_H.auto_getdata(24)
